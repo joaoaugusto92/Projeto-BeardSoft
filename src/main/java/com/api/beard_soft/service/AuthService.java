@@ -8,6 +8,8 @@ import com.api.beard_soft.infra.security.TokenService;
 import com.api.beard_soft.repository.UserRepository;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -39,14 +41,30 @@ public class AuthService {
         String encryptedPassword = passwordEncoder.encode(data.password());
 
         // Cria e salva o novo usuário
-        UserEntity newUser = new UserEntity(data.email(), encryptedPassword, UserRole.CLIENT);
+        UserEntity newUser = new UserEntity();
+        newUser.setName(data.name());
+        newUser.setEmail(data.email());
+        newUser.setPhoneNumber(data.phoneNumber());
+        newUser.setPassword(encryptedPassword);
+        newUser.setRole(UserRole.CLIENT);
         return this.userRepository.save(newUser);
     }
 
     public String loginUser(LoginRequestDto data){
         var usernamePassword = new UsernamePasswordAuthenticationToken(data.email(), data.password());
-        var auth = this.authenticationManager.authenticate(usernamePassword);
-        return tokenService.generateToken((UserEntity) auth.getPrincipal());
+
+        // 1. Autentica e recebe o objeto de segurança do Spring
+        Authentication auth = this.authenticationManager.authenticate(usernamePassword);
+
+        // 2. Obtém o objeto principal (que é um UserDetails)
+        UserDetails userDetails = (UserDetails) auth.getPrincipal(); // Caste para a INTERFACE UserDetails
+
+        // 3. Usa o username (email) para buscar a ENTIDADE JPA no repositório
+        UserEntity userEntity = userRepository.findByEmail(userDetails.getUsername())
+                .orElseThrow(() -> new RuntimeException("Erro interno: Usuário autenticado não encontrado."));
+
+        // 4. Gera o token passando a ENTIDADE JPA correta
+        return tokenService.generateToken(userEntity);
     }
 
     public UserEntity registerAdmin(UserCreateDto data){

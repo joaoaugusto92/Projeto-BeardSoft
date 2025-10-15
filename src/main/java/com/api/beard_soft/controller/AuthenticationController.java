@@ -61,7 +61,7 @@ public class AuthenticationController {
         return ResponseEntity.ok(userDetail); //retorna informações do usuário(Nome, email, telefone).
     }
 
-    @PutMapping("/update")
+    @PutMapping("/update/me")
     public ResponseEntity<UserResponseDto> updateUser(@RequestBody @Valid UserUpdateDto userUpdateDTO){
         org.springframework.security.core.Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String userIdentifier = authentication.getName();
