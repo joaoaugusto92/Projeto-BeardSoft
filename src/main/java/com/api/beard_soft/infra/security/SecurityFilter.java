@@ -2,6 +2,7 @@ package com.api.beard_soft.infra.security;
 
 import com.api.beard_soft.domain.user.UserEntity;
 import com.api.beard_soft.repository.UserRepository;
+import com.auth0.jwt.interfaces.DecodedJWT;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -27,27 +28,39 @@ public class SecurityFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         var token = this.recoverToken(request);
-        var decodedJWT = tokenService.validateToken(token);
 
-        if(decodedJWT != null){
-            String email = decodedJWT.getSubject();
-            String role = decodedJWT.getClaim("role").asString();
+        if (token != null) {
+            try {
+                DecodedJWT decodedJWT = tokenService.validateToken(token);
+                String email = decodedJWT.getSubject();
+                String role = decodedJWT.getClaim("role").asString(); // Ex: "ADMIN"
 
-            UserEntity user = userRepository.findByEmail(email)
-                    .orElseThrow(() -> new RuntimeException("User Not Found"));
+                String authorityString = "ROLE_" + role;
+                var authorities = Collections.singletonList(new SimpleGrantedAuthority(authorityString));
 
-            var authorities = Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + role));
-            var authentication = new UsernamePasswordAuthenticationToken(user, null, authorities);
+                System.out.println("SecurityFilter - Token Válido. Email: " + email + ", Autoridade Criada: " + authorities);
 
-            SecurityContextHolder.getContext().setAuthentication(authentication);
+                UserEntity user = userRepository.findByEmail(email)
+                        .orElseThrow(() -> new RuntimeException("Usuário do token não encontrado"));
+
+                var authentication = new UsernamePasswordAuthenticationToken(user, null, authorities);
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+
+            } catch (Exception e) {
+                System.err.println("SecurityFilter - Erro na validação do token: " + e.getMessage());
+                SecurityContextHolder.clearContext();
+            }
         }
+
         filterChain.doFilter(request, response);
     }
 
     private String recoverToken(HttpServletRequest request){
         var authHeader = request.getHeader("Authorization");
-        if(authHeader == null) return null;
-        return authHeader.replace("Bearer ", "");
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return null;
+        }
+        return authHeader.substring(7); // "Bearer ".length() é 7
     }
 
 }

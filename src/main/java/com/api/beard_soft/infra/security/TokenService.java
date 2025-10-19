@@ -32,15 +32,11 @@ public class TokenService {
         }
     }
     public DecodedJWT validateToken(String token){
-        try {
             Algorithm algorithm = Algorithm.HMAC256(secret);
             return JWT.require(algorithm)
                     .withIssuer("beard-soft-api")
                     .build()
                     .verify(token);
-        } catch (JWTVerificationException exception) {
-            return null;
-        }
     }
 
     private Instant generateExpirationDate(){
