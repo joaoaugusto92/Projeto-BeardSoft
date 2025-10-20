@@ -51,10 +51,17 @@ public class ServiceController {
     }
 
     @PatchMapping("/admin/services/deactivate/{id}")
-    //@PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ServiceResponseDto> desactivateService(@PathVariable Long id) {
         ServiceResponseDto response = servicesService.deactivateService(id);
         return ResponseEntity.ok(response); // Retorna 200 OK
+    }
+
+    @PatchMapping("/admin/services/activate/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ServiceResponseDto> activateService(@PathVariable Long id){
+        ServiceResponseDto activatedService = servicesService.activateService(id);
+        return ResponseEntity.ok(activatedService);
     }
 
     @DeleteMapping("/admin/services/{id}")

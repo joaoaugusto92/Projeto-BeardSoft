@@ -154,6 +154,24 @@ public class ServicesService {
         return convertToDTO(updatedEntity);
     }
 
+    public ServiceResponseDto activateService(Long id){
+        // 1. Busca a entidade, lançando exceção se não encontrar
+        ServiceEntity entityToUpdate = serviceRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Serviço com ID " + id +" não encontrado"
+                ));
+
+        // 2. Define o status como ATIVO (true)
+        entityToUpdate.setIsActive(true);
+
+        // 3. Salva a entidade atualizada
+        ServiceEntity updatedEntity = serviceRepository.save(entityToUpdate);
+
+        // 4. Retorna o DTO
+        return convertToDTO(updatedEntity);
+    }
+
 
     private void updateEntityFromDTO(ServiceEntity entity, ServiceRequestDto dto) {
         entity.setName(dto.name());
