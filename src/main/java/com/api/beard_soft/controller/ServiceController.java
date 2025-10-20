@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/admin/services")
+@RequestMapping("/api")
 public class ServiceController {
 
     private final ServicesService servicesService;
@@ -21,20 +21,20 @@ public class ServiceController {
         this.servicesService = servicesService;
     }
 
-    @GetMapping
+    @GetMapping("/services")
     public ResponseEntity<List<ServiceResponseDto>> getAllServices(){
         List<ServiceResponseDto> services = servicesService.findAllServices();
 
         return ResponseEntity.ok(services);
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/services/{id}")
     public ResponseEntity<ServiceResponseDto> getService(@PathVariable Long id){
         ServiceResponseDto response = servicesService.findServiceByID(id);
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping
+    @PostMapping("/admin/services")
     @ResponseStatus(HttpStatus.CREATED) // Define que o status de sucesso será 201 Created
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ServiceResponseDto> createService(@RequestBody @Valid ServiceRequestDto serviceRequest) {
@@ -43,21 +43,21 @@ public class ServiceController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @PutMapping("/{id}")
+    @PutMapping("/admin/services/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ServiceResponseDto> updateService(@PathVariable Long id, @RequestBody @Valid ServiceRequestDto serviceRequest){
         ServiceResponseDto response = servicesService.updateService(id, serviceRequest);
         return ResponseEntity.ok(response);
     }
 
-    @PatchMapping("/deactivate/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PatchMapping("/admin/services/deactivate/{id}")
+    //@PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ServiceResponseDto> desactivateService(@PathVariable Long id) {
         ServiceResponseDto response = servicesService.deactivateService(id);
         return ResponseEntity.ok(response); // Retorna 200 OK
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/admin/services/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> deleteService(@PathVariable Long id) {
         servicesService.deleteService(id);

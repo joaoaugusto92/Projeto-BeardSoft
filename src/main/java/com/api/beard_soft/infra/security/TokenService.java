@@ -37,7 +37,7 @@ public class TokenService {
                     .withIssuer("beard-soft-api")
                     .build()
                     .verify(token);
-    }
+    } // retorno é um Objeto DecodedJWT com as informações da conta.
 
     private Instant generateExpirationDate(){
         return LocalDateTime.now().plusHours(2).toInstant(ZoneOffset.of("-03:00"));
