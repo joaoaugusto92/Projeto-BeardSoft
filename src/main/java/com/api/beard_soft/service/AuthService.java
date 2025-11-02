@@ -1,10 +1,12 @@
 package com.api.beard_soft.service;
 
+import com.api.beard_soft.domain.user.Client.ClientEntity;
 import com.api.beard_soft.domain.user.UserEntity;
 import com.api.beard_soft.domain.user.UserRole;
 import com.api.beard_soft.dto.user.Login.LoginRequestDto;
 import com.api.beard_soft.dto.user.UserCreateDto;
 import com.api.beard_soft.infra.security.TokenService;
+import com.api.beard_soft.repository.ClientRepository;
 import com.api.beard_soft.repository.UserRepository;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -16,16 +18,15 @@ import org.springframework.stereotype.Service;
 @Service
 public class AuthService {
     private final UserRepository userRepository;
-
+    private final ClientRepository clientRepository;
     private final PasswordEncoder passwordEncoder;
-
     private final AuthenticationManager authenticationManager;
-
     private final TokenService tokenService;
 
-    public AuthService (UserRepository userRepository, PasswordEncoder passwordEncoder,
+    public AuthService (UserRepository userRepository,ClientRepository clientRepository, PasswordEncoder passwordEncoder,
                         AuthenticationManager authenticationManager, TokenService tokenService){
         this.userRepository = userRepository;
+        this.clientRepository = clientRepository;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
         this.tokenService = tokenService;
@@ -47,7 +48,14 @@ public class AuthService {
         newUser.setPhoneNumber(data.phoneNumber());
         newUser.setPassword(encryptedPassword);
         newUser.setRole(UserRole.CLIENT);
-        return this.userRepository.save(newUser);
+        UserEntity savedUser = this.userRepository.save(newUser);
+
+        ClientEntity newClient = new ClientEntity();
+        newClient.setUser(savedUser);
+
+        this.clientRepository.save(newClient);
+
+        return savedUser;
     }
 
     public String loginUser(LoginRequestDto data){

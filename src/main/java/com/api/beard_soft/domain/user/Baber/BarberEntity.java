@@ -1,5 +1,6 @@
 package com.api.beard_soft.domain.user.Baber;
 
+import com.api.beard_soft.domain.user.UserEntity;
 import com.api.beard_soft.domain.user.appointments.AppointmentsEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -19,13 +20,18 @@ public class BarberEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String name;
-    @Column(unique = true, nullable = false)
-    private String email;
-    private String phoneNumber;
-    private String password;
+    @Column(name = "is_active")
     private Boolean isActive;
+    @Column(name = "profile_img_url")
     private String profileImgURL;
+    @Column(name = "default_commission_percentage")
     private BigDecimal defaultCommissionPercentage;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", unique = true, nullable = false)
+    private UserEntity user;
+
+
 
     // Relacionamentos: O barbeiro tem vários agendamentos
     // FetchType.LAZY para não carregar todos os agendamentos sempre

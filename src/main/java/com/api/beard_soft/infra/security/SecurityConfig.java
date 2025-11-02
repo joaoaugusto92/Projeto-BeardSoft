@@ -43,9 +43,11 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/register").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/register/admin").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.PATCH, "/api/admin/services/deactivate/{id}").hasRole("ADMIN")
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                        .requestMatchers("/api/client/**").hasRole("CLIENT")
+                        .requestMatchers("/api/services/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/api/appointments/**").hasAnyRole("ADMIN", "CLIENT")
+                        .requestMatchers("/api/appointments/admin").hasRole("ADMIN")
+                        .requestMatchers("/api/appointments/client").hasRole("CLIENT")
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class);

@@ -10,6 +10,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -20,10 +21,13 @@ import java.util.Collections;
 public class SecurityFilter extends OncePerRequestFilter {
     private final TokenService tokenService;
     private final UserRepository userRepository;
+    private final CustomUserDetailsService userDetailsService;
 
-    public SecurityFilter(TokenService tokenService, UserRepository userRepository){
+    public SecurityFilter(TokenService tokenService, UserRepository userRepository, CustomUserDetailsService userDetailsService){
         this.tokenService = tokenService;
         this.userRepository = userRepository;
+        this.userDetailsService = userDetailsService;
+
     }
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
@@ -33,17 +37,15 @@ public class SecurityFilter extends OncePerRequestFilter {
             try {
                 DecodedJWT decodedJWT = tokenService.validateToken(token);
                 String email = decodedJWT.getSubject();
-                String role = decodedJWT.getClaim("role").asString(); // Ex: "ADMIN"
+                /*String role = decodedJWT.getClaim("role").asString(); // Ex: "ADMIN"
+                String authorityString = "ROLE_" + role;*/
 
-                String authorityString = "ROLE_" + role;
-                var authorities = Collections.singletonList(new SimpleGrantedAuthority(authorityString));
+                UserDetails userDetails = userDetailsService.loadUserByUsername(email);
 
-                System.out.println("SecurityFilter - Token Válido. Email: " + email + ", Autoridade Criada: " + authorities);
+                System.out.println("SecurityFilter - Token Válido. Email: " + email);
 
-                UserEntity user = userRepository.findByEmail(email)
-                        .orElseThrow(() -> new RuntimeException("Usuário do token não encontrado"));
 
-                var authentication = new UsernamePasswordAuthenticationToken(user, null, authorities);
+                var authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
                 SecurityContextHolder.getContext().setAuthentication(authentication);
 
             } catch (Exception e) {

@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/services")
 public class ServiceController {
 
     private final ServicesService servicesService;
@@ -21,20 +21,20 @@ public class ServiceController {
         this.servicesService = servicesService;
     }
 
-    @GetMapping("/services")
+    @GetMapping
     public ResponseEntity<List<ServiceResponseDto>> getAllServices(){
         List<ServiceResponseDto> services = servicesService.findAllServices();
 
         return ResponseEntity.ok(services);
     }
 
-    @GetMapping("/services/{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<ServiceResponseDto> getService(@PathVariable Long id){
         ServiceResponseDto response = servicesService.findServiceByID(id);
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/admin/services")
+    @PostMapping("/admin")
     @ResponseStatus(HttpStatus.CREATED) // Define que o status de sucesso será 201 Created
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ServiceResponseDto> createService(@RequestBody @Valid ServiceRequestDto serviceRequest) {
@@ -43,7 +43,7 @@ public class ServiceController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @PutMapping("/admin/services/{id}")
+    @PutMapping("/admin/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ServiceResponseDto> updateService(@PathVariable Long id, @RequestBody @Valid ServiceRequestDto serviceRequest){
         ServiceResponseDto response = servicesService.updateService(id, serviceRequest);

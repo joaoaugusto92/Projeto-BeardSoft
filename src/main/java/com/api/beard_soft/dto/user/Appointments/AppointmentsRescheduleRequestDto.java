@@ -6,7 +6,7 @@ import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
-public record AppointmentsRescheduleRequest(
+public record AppointmentsRescheduleRequestDto(
         @NotNull @FutureOrPresent LocalDate newDate,
         @NotNull LocalTime newTime
 ) {
