@@ -6,6 +6,7 @@ import com.api.beard_soft.domain.user.appointments.AppointmentsEntity;
 import com.api.beard_soft.domain.user.appointments.AppointmentsStatus;
 import com.api.beard_soft.domain.user.service.ServiceEntity;
 import com.api.beard_soft.dto.user.Appointments.AppointmentsRequestDto;
+import com.api.beard_soft.dto.user.Appointments.AppointmentsRescheduleRequestDto;
 import com.api.beard_soft.dto.user.Appointments.AppointmentsResponseDto;
 import com.api.beard_soft.repository.AppointmentsRepository;
 import com.api.beard_soft.repository.BarberRepository;
@@ -153,9 +154,70 @@ public class AppointmentsService {
 
         // Altera o status
         appointment.setStatus(AppointmentsStatus.CANCELED);
-        // Não é necessário chamar .save() se estiver dentro de @Transactional,
-        // mas chamo por clareza (o Hibernate detecta a mudança).
         appointmentRepository.save(appointment);
+    }
+
+    @Transactional
+    public AppointmentsResponseDto rescheduleAppointment(Long appointmentId, AppointmentsRescheduleRequestDto requestDto) {
+
+        //(Validação de Existência)
+        AppointmentsEntity existingAppointment = appointmentRepository.findById(appointmentId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Agendamento com ID " + appointmentId + " não encontrado."
+                ));
+
+        //O agendamento só pode ser reagendado se não tiver sido FINALIZADO.
+        if (existingAppointment.getStatus() == AppointmentsStatus.CONFIRMED) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST, "Não é possível reagendar um agendamento finalizado."
+            );
+        }
+
+        //Cálculo de Novos Horários
+        LocalDateTime newStartTime = LocalDateTime.of(requestDto.newDate(), requestDto.newTime());
+        Integer duration = existingAppointment.getDurationInMinutes(); // A duração do serviço é mantida
+        LocalDateTime newEndTime = newStartTime.plusMinutes(duration);
+
+        ServiceEntity service = existingAppointment.getService();
+        BarberEntity barber = existingAppointment.getBarber(); // O barbeiro é o mesmo
+
+        validateBusinessHours(newStartTime, newEndTime);
+
+        validateAppointmentTimeConflictExcludingSelf(newStartTime, newEndTime, barber, appointmentId);
+
+        // 5. Atualiza a Entidade
+        existingAppointment.setStartTime(newStartTime);
+        existingAppointment.setEndTime(newEndTime);
+        existingAppointment.setStatus(AppointmentsStatus.PENDING); // O status pode voltar a PENDING após reagendamento.
+
+        // Persiste a mudança (opcionalmente explícito, mas garantido pelo @Transactional)
+        AppointmentsEntity updatedAppointment = appointmentRepository.save(existingAppointment);
+
+        return convertToDto(updatedAppointment);
+    }
+
+    private void validateAppointmentTimeConflictExcludingSelf(
+            LocalDateTime startTime,
+            LocalDateTime endTime,
+            BarberEntity barber,
+            Long excludedAppointmentId) {
+
+        List<AppointmentsStatus> activeStatuses = List.of(
+                AppointmentsStatus.PENDING,
+                AppointmentsStatus.CONFIRMED,
+                AppointmentsStatus.IN_SERVICE
+        );
+
+        // Você precisará de uma nova query no Repository (ou um filtro no Java)
+        // que exclua o 'excludedAppointmentId'.
+        Optional<AppointmentsEntity> conflict = appointmentRepository
+                .findConflictForBarberExcludingId(startTime, endTime, barber, activeStatuses, excludedAppointmentId);
+
+        if (conflict.isPresent()) {
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT, "O Barbeiro já possui um agendamento conflitante no novo horário: " + startTime.toLocalTime()
+            );
+        }
     }
 
 
