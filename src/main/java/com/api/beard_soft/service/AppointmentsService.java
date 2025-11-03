@@ -27,7 +27,7 @@ import java.util.Locale;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-@Service
+@Service("appointmentservice")
 public class AppointmentsService {
 
     // --- CONSTANTES DE HORÁRIO COMERCIAL ---
@@ -99,11 +99,11 @@ public class AppointmentsService {
                 LocalDate endOfWeek = date.with(DayOfWeek.SUNDAY);
                 start = startOfWeek.atStartOfDay();
                 end = endOfWeek.atTime(LocalTime.MAX);
-            } else { // Padrão: dia único (ou se 'period' for "day")
+            } else {
                 end = date.atTime(LocalTime.MAX); // Até o final do dia
             }
         } else {
-            // Se não houver filtro, retorna tudo (cuidado com performance em grandes bases)
+            // Se não houver filtro, retorna tudo
             List<AppointmentsEntity> allAppointments = appointmentRepository.findAll();
             return allAppointments.stream().map(this::convertToDto).collect(Collectors.toList());
         }
@@ -115,6 +115,25 @@ public class AppointmentsService {
         return filteredAppointments.stream()
                 .map(this::convertToDto)
                 .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public boolean isAppointmentOwner(Long appointmentId, Long clientId){
+        return appointmentRepository.findById(appointmentId)
+                .map(AppointmentsEntity::getClient) // Pega o ClientEntity do agendamento (LAZY LOAD seguro pelo @Transactional)
+                .map(ClientEntity::getId)         // Pega o ID do Cliente (do agendamento)
+                .map(ownerId -> ownerId.equals(clientId)) // Compara com o ID do cliente logado
+                .orElse(false);
+    }
+
+    @Transactional(readOnly = true)
+    public AppointmentsResponseDto findAppointmentDetails(Long appointmentId) {
+        // A lógica de segurança está no Controller. Aqui, apenas busca os dados.
+        AppointmentsEntity appointment = appointmentRepository.findById(appointmentId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Agendamento com ID " + appointmentId + " não encontrado."
+                ));
+        return convertToDto(appointment);
     }
 
 

@@ -6,10 +6,12 @@ import com.api.beard_soft.infra.security.CustomCLientDetails;
 import com.api.beard_soft.service.AppointmentsService;
 import com.sun.jdi.connect.spi.TransportService;
 import jakarta.validation.Valid;
+import org.apache.coyote.Response;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
@@ -40,7 +42,7 @@ public class AppointmentController {
 
        List<AppointmentsResponseDto> appointments = appointmentsService.findAllAppointments(clientId);
 
-       return ResponseEntity.ok(appointments);
+       return ResponseEntity.status(HttpStatus.OK).body(appointments);
     }
 
     @GetMapping("/admin")
@@ -51,6 +53,15 @@ public class AppointmentController {
         List<AppointmentsResponseDto> appointments =
                 appointmentsService.findAppointmentsByDayOrWeek(date, period);
 
-        return ResponseEntity.ok(appointments);
+        return ResponseEntity.status(HttpStatus.OK).body(appointments);
+    }
+
+    @GetMapping("/{id}")
+    @PreAuthorize("hasRole('admin') or @appointmentService.isAppointmentOwner(#id, principal.id))")
+    public ResponseEntity<AppointmentsResponseDto> getAppointmentsDetails(@PathVariable Long id,
+                                                                          Authentication authentication){
+        AppointmentsResponseDto dto = appointmentsService.findAppointmentDetails(id);
+
+        return ResponseEntity.status(HttpStatus.OK).body(dto);
     }
 }
