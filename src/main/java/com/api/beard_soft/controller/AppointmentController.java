@@ -57,7 +57,7 @@ public class AppointmentController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasRole('admin') or @appointmentService.isAppointmentOwner(#id, principal.id))")
+    @PreAuthorize("hasRole('ADMIN') or @appointmentsService.isAppointmentOwner(#id, principal.id)")
     public ResponseEntity<AppointmentsResponseDto> getAppointmentsDetails(@PathVariable Long id,
                                                                           Authentication authentication){
         AppointmentsResponseDto dto = appointmentsService.findAppointmentDetails(id);
@@ -66,7 +66,7 @@ public class AppointmentController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN') or (@appointmentService.isAppointmentOwner(#id, principal.id))")
+    @PreAuthorize("hasRole('ADMIN') or (@appointmentsService.isAppointmentOwner(#id, principal.id)")
     //O PreAuthorize garante que apenas ADMIN ou CLIENT acesse esse endpoint
     public ResponseEntity<Void> cancelAppointment(
             @PathVariable Long id,

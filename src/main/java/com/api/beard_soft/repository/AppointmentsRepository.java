@@ -60,12 +60,11 @@ public interface AppointmentsRepository extends JpaRepository<AppointmentsEntity
         SELECT a FROM AppointmentsEntity a
         WHERE a.barber = :barber
         AND a.status IN :activeStatuses
-        AND a.id != :excludedAppointmentId               -- <--- FILTRO CRÍTICO AQUI!
+        AND a.id != :excludedAppointmentId
         AND (
             (:startTime < a.endTime AND :endTime > a.startTime)
         )
         ORDER BY a.startTime
-        LIMIT 1
     """)
     Optional<AppointmentsEntity> findConflictForBarberExcludingId(
             @Param("startTime") LocalDateTime startTime,

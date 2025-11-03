@@ -28,7 +28,7 @@ import java.util.Locale;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-@Service("appointmentservice")
+@Service("appointmentsService")
 public class AppointmentsService {
 
     // --- CONSTANTES DE HORÁRIO COMERCIAL ---
