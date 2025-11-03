@@ -254,7 +254,7 @@ public class ServicesService {
 
         // Lista de status que NÃO representam um agendamento futuro ativo
         List<AppointmentsStatus> inactiveStatus = List.of(
-                AppointmentsStatus.CANCELLED,
+                AppointmentsStatus.CANCELED,
                 AppointmentsStatus.COMPLETED
         );
 

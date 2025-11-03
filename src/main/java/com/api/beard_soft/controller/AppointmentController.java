@@ -64,4 +64,17 @@ public class AppointmentController {
 
         return ResponseEntity.status(HttpStatus.OK).body(dto);
     }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN') or (@appointmentService.isAppointmentOwner(#id, principal.id))")
+    //O PreAuthorize garante que apenas ADMIN ou CLIENT acesse esse endpoint
+    public ResponseEntity<Void> cancelAppointment(
+            @PathVariable Long id,
+            Authentication authentication) {
+
+        appointmentsService.cancelAppointment(id);
+
+        // Retorna 204 No Content para indicar sucesso na operação DELETE/CANCEL
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
 }

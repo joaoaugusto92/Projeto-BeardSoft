@@ -136,6 +136,28 @@ public class AppointmentsService {
         return convertToDto(appointment);
     }
 
+    @Transactional
+    public void cancelAppointment(Long appointmentId) {
+
+        AppointmentsEntity appointment = appointmentRepository.findById(appointmentId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Agendamento com ID " + appointmentId + " não encontrado."
+                ));
+
+        // Lógica de Negócio: Não se pode cancelar um agendamento já finalizado ou cancelado.
+        if (appointment.getStatus() == AppointmentsStatus.CANCELED || appointment.getStatus() == AppointmentsStatus.COMPLETED) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST, "Não é possível cancelar um agendamento com status: " + appointment.getStatus()
+            );
+        }
+
+        // Altera o status
+        appointment.setStatus(AppointmentsStatus.CANCELED);
+        // Não é necessário chamar .save() se estiver dentro de @Transactional,
+        // mas chamo por clareza (o Hibernate detecta a mudança).
+        appointmentRepository.save(appointment);
+    }
+
 
     // --- MÉTODOS DE CARREGAMENTO (LOAD) ---
     private ServiceEntity loadService(Long serviceId) {
