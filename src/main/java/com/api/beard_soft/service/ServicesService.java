@@ -175,7 +175,7 @@ public class ServicesService {
 
     private void updateEntityFromDTO(ServiceEntity entity, ServiceRequestDto dto) {
         entity.setName(dto.name());
-        entity.setValue(dto.value());
+        entity.setPrice(dto.value());
         entity.setDescription(dto.description());
         entity.setDurationInMinutes(dto.durationInMinutes());
         entity.setImageUrl(dto.imageURL()); // Note: usar ImageURL se esse for o nome correto no seu DTO
@@ -191,8 +191,8 @@ public class ServicesService {
         return new ServiceResponseDto(
                 entity.getId(),
                 entity.getName(),
-                entity.getValue(),
-                formatCurrency(entity.getValue()),              // campo displayValue
+                entity.getPrice(),
+                formatCurrency(entity.getPrice()),              // campo displayValue
                 entity.getDescription(),
                 entity.getDurationInMinutes(),
                 formatDuration(entity.getDurationInMinutes()),  // campo displayDuration
@@ -207,7 +207,7 @@ public class ServicesService {
 
         // O ID é deixado em branco, pois será gerado pelo banco de dados
         entity.setName(dto.name());
-        entity.setValue(dto.value());
+        entity.setPrice(dto.value());
         entity.setDescription(dto.description());
         entity.setDurationInMinutes(dto.durationInMinutes());
         entity.setImageUrl(dto.imageURL());

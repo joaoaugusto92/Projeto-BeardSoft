@@ -332,7 +332,7 @@ public class AppointmentsService {
 
         // 2. Valores calculados/formatados
         String durationDisplay = formatDuration(entity.getDurationInMinutes());
-        String valueDisplay = formatCurrency(service.getValue());
+        String valueDisplay = formatCurrency(service.getPrice());
 
         // A chamada ao construtor com os 15 campos na ordem correta:
         return new AppointmentsResponseDto(
@@ -353,7 +353,7 @@ public class AppointmentsService {
                 service.getName(),            // 8. serviceName
                 entity.getDurationInMinutes(),// 9. durationMinutes (Integer)
                 durationDisplay,              // 10. serviceDurationDisplay (String)
-                service.getValue(),           // 11. serviceValue (BigDecimal)
+                service.getPrice(),           // 11. serviceValue (BigDecimal)
                 valueDisplay,                 // 12. serviceValueDisplay (String)
 
                 // 13-15. DADOS DO AGENDAMENTO

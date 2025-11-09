@@ -27,7 +27,8 @@ public class ServiceEntity {
     @Size(max = 200, min = 50)
     private String description;
     @DecimalMin(value = "0.00", message = "Valor não pode ser menor que zero!")
-    private BigDecimal value;
+    @Column(name = "service_price")
+    private BigDecimal price;
     private String imageUrl; // url da imagem do serviço
     @Min(5)
     @Max(180)

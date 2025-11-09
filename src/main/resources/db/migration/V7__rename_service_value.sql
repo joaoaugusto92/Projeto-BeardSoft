@@ -1,0 +1,1 @@
+ALTER TABLE services RENAME COLUMN value TO service_price;
