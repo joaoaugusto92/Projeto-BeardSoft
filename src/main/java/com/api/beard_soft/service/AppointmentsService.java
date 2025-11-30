@@ -88,6 +88,12 @@ public class AppointmentsService {
     }
 
     @Transactional(readOnly = true)
+    public List<AppointmentsResponseDto> findAllAppointmentsForAdmin(){
+        List<AppointmentsEntity> allAppointments = appointmentRepository.findAll();
+        return allAppointments.stream().map(this::convertToDto).collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
     public List<AppointmentsResponseDto> findAppointmentsByDayOrWeek(LocalDate date, String period){
         LocalDateTime start;
         LocalDateTime end;

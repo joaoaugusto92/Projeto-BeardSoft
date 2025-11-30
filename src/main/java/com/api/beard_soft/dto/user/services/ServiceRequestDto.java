@@ -12,7 +12,7 @@ public record ServiceRequestDto(
         @Column(unique = true, nullable = false)
         String name,
 
-        @Size(max = 200, min = 50)
+        @Size(max = 200, min = 1)
         String description,
 
         @DecimalMin(value = "0.00", message = "Valor não pode ser menor que zero!")
